@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="utf-8">
+<head>
+    <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=0">
+    <title>活动列表</title>
+    <link rel="stylesheet" href="/static/weui.css"/>
+    <link rel="stylesheet" href="/static/example.css"/>
+    <script src="/static/zepto.min.js"></script>
+    <script src="/static/example.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <script src="https://cdn.staticfile.org/axios/0.18.0/axios.min.js"></script>
+</head>
+<body>
+<div id="cellId" style="font-size: 50px">
+    <div v-if="isShow">
+   <div class="weui-cells__title">
+       <a href="javascript:;" class="weui-btn weui-btn_mini weui-btn_primary" @click="addActive()">添加活动</a>
+       <a href="javascript:;" class="weui-btn weui-btn_mini weui-btn_primary" @click="history()">查看历史活动</a>
+   </div>
+
+    <div class="weui-cells">
+
+        <div class="weui-cell weui-cell_access weui-cell_example"  v-for="travel in info">
+
+            <div class="weui-cell__bd" >
+                <p >活动名称：{{travel.travelName}}</p>
+                <p v-if="travel.type==1">活动类型：攀岩速降</p>
+                <p v-if="travel.type==2">活动类型：登山</p>
+                <p v-if="travel.type==3">活动类型：攀冰</p>
+                <p v-if="travel.type==4">活动类型：徒步自驾</p>
+                <p>开始时间：{{travel.startT}}</p>
+                <p>结束时间：{{travel.endT}}</p>
+                <p>活动领队：{{travel.lead}}</p>
+            </div>
+            <div style="margin-bottom: 20px">
+            <div class="weui_cell_ft"><a href="javascript:;" class="weui-btn weui-btn_mini weui-btn_default" @click="gotoAddUser(travel.id)">维护队员</a></div>
+            <div class="weui_cell_ft"><a href="javascript:;" class="weui-btn weui-btn_mini weui-btn_default" @click="update(travel.id,travel.travelName,travel.type,travel.startT,travel.endT,travel.lead)">修改活动</a></div>
+            <div class="weui_cell_ft"><a href="javascript:;" class="weui-btn weui-btn_mini weui-btn_default" @click="closeActive(travel.id)">关闭活动</a></div>
+            </div>
+        </div>
+
+     </div>
+
+    </div>
+
+
+   <!--- 添加活动-->
+    <div class="weui-cells weui-cells_form" style="margin-top: 20px" v-if="isShowAdd">
+        <div class="weui-cells__title" style="color: #0BB20C">
+            <a href="javascript:;" class="weui-btn weui-btn_mini weui-btn_primary" @click="addActiveInfo()">{{messageInfo}}</a>
+            <a href="javascript:;" class="weui-btn weui-btn_mini weui-btn_default" @click="gohome()">返回</a>
+            {{message}} <div style="color:red"><b>{{errorInfo}}</b></div>
+        </div>
+        <div class="weui-cell">
+            <div class="weui-cell__hd"><label class="weui-label">活动名称</label></div>
+            <div class="weui-cell__bd">
+                <input type="text" name="id"  v-model="id" hidden="hidden">
+                <input id="travelName" class="weui-input" v-model="travelName"  name="travelName" required="required" placeholder="请填写活动名称"/>
+            </div>
+
+        </div>
+
+        <div class="weui-cell weui-cell_select weui-cell_select-after">
+            <div class="weui-cell__hd">
+                <label for="" class="weui-label">活动类型</label>
+            </div>
+            <div class="weui-cell__bd">
+                <select class="weui-select" name="type" v-model="type">
+                    <option value="1">攀岩</option>
+                    <option value="2">登山</option>
+                    <option value="3">攀冰</option>
+                    <option value="4">徒步自驾</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="weui-cell">
+            <div class="weui-cell__hd"><label for="" class="weui-label">开始日期</label></div>
+            <div class="weui-cell__bd">
+                <input class="weui-input" type="date" name="startT" v-model="startT" value=""/>
+            </div>
+        </div>
+        <div class="weui-cell">
+            <div class="weui-cell__hd"><label for="" class="weui-label">结束日期</label></div>
+            <div class="weui-cell__bd">
+                <input class="weui-input" name="endT" v-model="endT" type="date" value=""/>
+            </div>
+        </div>
+        <div class="weui-cell">
+            <div class="weui-cell__hd"><label class="weui-label">活动领队</label></div>
+            <div class="weui-cell__bd">
+                <input id="js_input2"  name="lead" v-model="lead" class="weui-input" placeholder="活动领队"/>
+            </div>
+        </div>
+
+    </div>
+
+
+
+</div>
+  <script type="text/javascript">
+
+      new Vue(
+          {
+              el:'#cellId',
+
+              data(){
+                  return{
+                      info:null,
+                      isShow:true,
+                      isShowAdd:false,
+                      travelName:"",
+                      type:"",
+                      startT:"",
+                      endT:"",
+                      lead:"",
+                      id:"",
+                      messageInfo:"添加活动",
+                      message:"",
+                      errorInfo:""
+                  }
+              },
+              methods: {
+                  update: function (id,travelName,type,startT,endT,lead) {
+                      this.travelName=travelName;
+                      this.isShow=false;
+                      this.isShowAdd=true;
+                      this.type=type;
+                      this.startT=startT;
+                      this.endT=endT;
+                      this.lead=lead;
+                      this.id=id;
+                      this.messageInfo="修改活动";
+
+                  },
+                  //添加活动
+                  addActive:function () {
+                      this.messageInfo="添加活动";
+                      this.isShow=false;
+                      this.isShowAdd=true;
+                      this.id="";
+                      this.travelName="";
+                      this.type="";
+                      this.startT="";
+                      this.endT="";
+                      this.lead="";
+
+                  },
+                  //添加活动信息
+                  addActiveInfo:function(){
+
+                      var params = new URLSearchParams();
+                      params.append('travelName',this.travelName);
+                      params.append('type',this.type);
+                      params.append('startT',this.startT);
+                      params.append('endT',this.endT);
+                      params.append('lead',this.lead);
+                      params.append('id',this.id);
+                       if(this.travelName==""){
+                           this.errorInfo="活动名不能为空！！";
+                           return;
+                       }
+                      if(this.type==""){
+                          this.errorInfo="活动类型不能为空！！";
+                          return;
+                      }
+                      if(this.startT==""){
+                          this.errorInfo="开始时间不能为空！！";
+                          return;
+                      }
+                      if(this.endT==""){
+                          this.errorInfo="结束时间不能为空！！";
+                          return;
+                      }
+                      if(this.lead==""){
+                          this.errorInfo="领队不能为空！！";
+                          return;
+                      }
+
+                      axios({
+                          method: 'post',
+                          url:'/addActive',
+                          data:params
+                      }).then(response => (this.info = response.data))
+                          .catch(function (error) { // 请求失败处理
+                          console.log(error);
+                      });
+
+                      this.travelName="";
+                      this.type="";
+                      this.lead="";
+                      this.isShow=true;
+                      this.isShowAdd=false;
+
+                  },
+                  gohome:function () {
+                      this.isShow=true;
+                      this.isShowAdd=false;
+                  },
+                  gotoAddUser:function(id){
+                   document.location.href="/gotoAddUser/"+id;
+                  },
+                  history:function(){
+                        document.location.href="/page/travelListHistory.html";
+                  },
+                  closeActive:function (id) {
+                      var r=confirm("你确定要关闭么？");
+                      if(!r){
+                          return;
+                      }
+                      axios
+                          .get('/'+id+'/closeActive')
+                          .then(response => (this.info = response.data))
+                  .catch(function (error) { // 请求失败处理
+                          console.log(error);
+                      });
+                  }
+              },
+              mounted () {
+                  axios
+                      .get('/0/listtravel')
+                      .then(response => (this.info = response.data))
+              .catch(function (error) { // 请求失败处理
+                      console.log(error);
+                  });
+              }
+          }
+      )
+
+  </script>
+</body>
+</html>

@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=0">
+    <title>用户列表</title>
+    <link rel="stylesheet" href="/static/weui.css"/>
+    <link rel="stylesheet" href="/static/example.css"/>
+    <script src="/static/zepto.min.js"></script>
+    <script src="/static/example.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <script src="https://cdn.staticfile.org/axios/0.18.0/axios.min.js"></script>
+</head>
+<body>
+
+<div id="cellId" style="font-size: 50px">
+    <input type="hidden" name="trid" id="trid" th:value="${trid}" />
+    <!--维护人员-->
+    <div class="weui-cells weui-cells_form" style="margin-top: 20px" >
+        <div class="weui-cells__title" style="color: #0BB20C">
+            <a href="javascript:;" class="weui-btn weui-btn_mini weui-btn_primary" @click="addUser()">{{btnMessage}}</a>
+            <a href="javascript:;" class="weui-btn weui-btn_mini weui-btn_default" @click="goHome()">返回</a>
+            <a href="javascript:;" class="weui-btn weui-btn_mini weui-btn_default" @click="outexcle()">导出保险信息</a>
+            <div style="color: red">{{errorInfo}}</div>
+        </div>
+        <div class="weui-cell">
+            <input type="hidden" name="id" id="id" v-model="id" />
+            <div class="weui-cell__hd"><label class="weui-label" >真实姓名</label></div>
+            <div class="weui-cell__bd">
+
+                <input class="weui-input" v-model="userName" @focus="findUser()"  name="userName" placeholder="请填写用户名"/>
+            </div>
+
+        </div>
+        <div class="weui-cell">
+            <div class="weui-cell__hd"><label class="weui-label">网名</label></div>
+            <div class="weui-cell__bd">
+                <input class="weui-input" v-model="itName"  name="itName" placeholder="请填写网名"/>
+            </div>
+
+        </div>
+
+        <div class="weui-cell">
+            <div class="weui-cell__hd"><label class="weui-label">身份证号码</label></div>
+            <div class="weui-cell__bd">
+                <input class="weui-input" v-model="carId"  name="carId" placeholder="请填写身份证"/>
+            </div>
+
+        </div>
+
+        <div class="weui-cell">
+            <div class="weui-cell__hd"><label class="weui-label">电话</label></div>
+            <div class="weui-cell__bd">
+                <input class="weui-input" v-model="tel"  name="tel" placeholder="请填写电话"/>
+            </div>
+        </div>
+
+        <div class="weui-cell">
+            <div class="weui-cell__hd"><label class="weui-label">预交费用</label></div>
+            <div class="weui-cell__bd">
+                <input class="weui-input" v-model="qq"  name="qq" placeholder="请填写预交费用"/>
+            </div>
+        </div>
+
+
+    </div>
+
+    <!---显示查询结果-->
+    <div class="weui-cells">
+    <div class="weui-cell weui-cell_access weui-cell_example"  v-for="user in info">
+
+        <div class="weui-cell__bd" >
+            <p >用户名：{{user.userName}}</p>
+            <p>网名字：{{user.itName}}</p>
+            <p>身份证：{{user.carId}}</p>
+            <p>电话号：{{user.tel}}</p>
+            <p>费用额：{{user.qq}}</p>
+        </div>
+        <div style="margin-bottom: 50px">
+            <div class="weui_cell_ft" style="margin-bottom: 50px"><a href="javascript:;" class="weui-btn weui-btn_mini weui-btn_default" @click="updateUserGoto(user.id)">修改</a></div>
+            <div class="weui_cell_ft"><a href="javascript:;" class="weui-btn weui-btn_mini weui-btn_default" @click="delUser(user.id)">删除</a></div>
+        </div>
+    </div>
+    </div>
+</div>
+
+</div>
+
+</div>
+  <script type="text/javascript">
+      new Vue({
+          el: '#cellId',
+          data: {
+              userName:'',
+              itName:'',
+              tel:'',
+              qq:'',
+              carId:'',
+              info:'',
+              id:'',
+              btnMessage:'添加用户',
+              errorInfo:''
+          },
+          methods: {
+              addUser: function () {
+                  this.btnMessage="添加用户";
+              var trid= document.getElementById("trid").value;
+                  var params = new URLSearchParams();
+                  params.append("tr_id",trid);
+                  params.append("userName",this.userName);
+                  params.append("itName",this.itName);
+                  params.append("tel",this.tel);
+                  params.append("qq",this.qq);
+                  params.append("carId",this.carId);
+                  params.append("id",this.id);
+
+                  if(this.userName==""){
+                      this.errorInfo="用户名不能为空！";
+                      return;
+                  }
+                  if(this.itName==""){
+                      this.errorInfo="网名不能为空！";
+                      return;
+                  }
+                  if(this.tel==""){
+                      this.errorInfo="电话不能为空！";
+                      return;
+                  }
+                  if(this.qq==""){
+                      this.errorInfo="费用不能为空！";
+                      return;
+                  }
+                  if(this.carId==""){
+                      this.errorInfo="身份证号码不能为空！";
+                      return;
+                  }
+                  axios({
+                      method: 'post',
+                      url:'/addUser',
+                      data:params
+                  }).then(response => (this.info = response.data))
+              .catch(function (error) { // 请求失败处理
+                      console.log(error);
+                  });
+                        this.userName='',
+                        this.itName='',
+                        this.tel='',
+                        this.qq='',
+                        this.carId='',
+                        this.id=''
+              },
+              delUser:function (userId) {
+                  var trid= document.getElementById("trid").value;
+                  var r=confirm("你确定要删除么？");
+                  if(!r){
+                      return;
+                  }
+                  axios
+                      .get('/'+userId+'/'+trid+'/delUser')
+                      .then(response => (this.info = response.data))
+              .catch(function (error) { // 请求失败处理
+                      console.log(error);
+                  });
+              },
+              updateUserGoto:function(userId){
+                  this.btnMessage="修改用户";
+                  axios
+                      .get('/'+userId+'/updateUserGoto')
+                      .then(response => (this.userName = response.data.userName,
+                      this.carId=response.data.carId,
+                          this.tel=response.data.tel,
+                          this.qq=response.data.qq,
+                          this.itName=response.data.itName,
+                          this.id=response.data.id
+
+                  ))
+              .catch(function (error) { // 请求失败处理
+                      console.log(error);
+                  });
+              },
+              findUser:function(){
+                  axios
+                      .get('/'+this.userName+'/findUser')
+                      .then(response => (this.userName = response.data.userName,
+                          this.carId=response.data.carId,
+                          this.tel=response.data.tel,
+                          this.qq=response.data.qq,
+                          this.itName=response.data.itName
+
+                  ))
+              .catch(function (error) { // 请求失败处理
+                      console.log(error);
+                  });
+              },
+              goHome:function () {
+                  location.href="/page/travelList.html"
+              },
+              outexcle:function () {
+                  var trid= document.getElementById("trid").value;
+                  location.href="/"+trid+"/listUserMap";
+              }
+          },
+          mounted () {
+              var trid= document.getElementById("trid").value;
+              axios
+                  .get('/'+trid+'/listUser')
+                  .then(response => (this.info = response.data))
+          .catch(function (error) { // 请求失败处理
+                  console.log(error);
+              });
+          }
+      })
+
+  </script>
+</body>
+</html>

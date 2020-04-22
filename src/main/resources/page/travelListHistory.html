@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="utf-8">
+<head>
+    <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=0">
+    <title>历史活动列表</title>
+    <link rel="stylesheet" href="/static/weui.css"/>
+    <link rel="stylesheet" href="/static/example.css"/>
+    <script src="/static/zepto.min.js"></script>
+    <script src="/static/example.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <script src="https://cdn.staticfile.org/axios/0.18.0/axios.min.js"></script>
+</head>
+<body>
+<div id="cellId" style="font-size: 50px">
+
+   <div class="weui-cells__title">
+       <a href="javascript:;" class="weui-btn weui-btn_mini weui-btn_primary" @click="gotoNew()">查看最新活动</a>
+       <div class="weui-cells weui-cells_form">
+       <div class="weui-cell weui-cell_select weui-cell_select-after ">
+           <div class="weui-cell__hd">
+               <label for="" class="weui-label">年份</label>
+           </div>
+           <div class="weui-cell__bd">
+               <select class="weui-select" name="yearStr" v-model="yearStr" @change="selectFn($event)">
+                   <option value="1">全部</option>
+                   <option value="2019">2019</option>
+                   <option value="2020">2020</option>
+                   <option value="2021">2021</option>
+                   <option value="2022">2022</option>
+                   <option value="2023">2023</option>
+                   <option value="2024">2024</option>
+                   <option value="2025">2025</option>
+               </select>
+           </div>
+       </div>
+       </div>
+
+   </div>
+
+    <div class="weui-cells">
+
+        <div class="weui-cell weui-cell_access weui-cell_example"  v-for="travel in info">
+
+            <div class="weui-cell__bd" >
+                <p >活动名称：{{travel.travelName}}</p>
+                <p v-if="travel.type==1">活动类型：攀岩速降</p>
+                <p v-if="travel.type==2">活动类型：登山</p>
+                <p v-if="travel.type==3">活动类型：攀冰</p>
+                <p v-if="travel.type==4">活动类型：徒步自驾</p>
+                <p>开始时间：{{travel.startT}}</p>
+                <p>结束时间：{{travel.endT}}</p>
+                <p>活动领队：{{travel.lead}}</p>
+            </div>
+            <div style="margin-bottom: 20px">
+            <div class="weui_cell_ft"><a href="javascript:;" class="weui-btn weui-btn_mini weui-btn_default" @click="openActive(travel.id)">开启活动</a></div>
+            </div>
+        </div>
+
+     </div>
+
+    </div>
+
+
+  <script type="text/javascript">
+
+
+      new Vue(
+          {
+              el:'#cellId',
+
+              data(){
+                  return{
+                      info:null,
+                      yearStr:''
+
+                  }
+              },
+              methods: {
+
+                  openActive:function (id) {
+                      axios
+                          .get('/'+id+'/openActive')
+                          .then(response => (this.info = response.data))
+                  .catch(function (error) { // 请求失败处理
+                          console.log(error);
+                      });
+                  },
+                  gotoNew:function () {
+                      document.location.href="/page/travelList.html";
+                  },
+                  selectFn :function(e) {
+
+                   var yearStr=  e.target.value; // 选择项的value
+                      axios
+                          .get('/1/'+yearStr+'/listtravel')
+                          .then(response => (this.info = response.data))
+                  .catch(function (error) { // 请求失败处理
+                          console.log(error);
+                      });
+                  }
+              },
+              mounted () {
+                  axios
+                      .get('/1/listtravelNow')
+                      .then(response => (this.info = response.data))
+              .catch(function (error) { // 请求失败处理
+                      console.log(error);
+                  });
+              }
+          }
+      )
+
+  </script>
+</body>
+</html>
